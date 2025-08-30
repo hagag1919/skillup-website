@@ -4,7 +4,7 @@ import type { ApiResponse } from '../types/index.js';
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: 'https://skillup-zvp9.onrender.com',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://skillup-zvp9.onrender.com',
   TIMEOUT: 10000,
   HEADERS: {
     'Content-Type': 'application/json',

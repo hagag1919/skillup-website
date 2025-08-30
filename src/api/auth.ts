@@ -41,9 +41,19 @@ export const authApi = {
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
+      console.error('Registration error:', error);
+      
       if (axiosError.response?.data) {
         throw new Error(axiosError.response.data.message || 'Registration failed');
       }
+      
+      // Check for CORS or network errors
+      if (axiosError.code === 'ERR_NETWORK' || 
+          axiosError.message?.includes('Network Error') ||
+          axiosError.message?.includes('CORS')) {
+        throw new Error('Unable to connect to server. This may be due to CORS configuration or network issues.');
+      }
+      
       throw new Error('Network error');
     }
   },
@@ -80,9 +90,19 @@ export const authApi = {
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
+      console.error('Login error:', error);
+      
       if (axiosError.response?.data) {
         throw new Error(axiosError.response.data.message || 'Login failed');
       }
+      
+      // Check for CORS or network errors
+      if (axiosError.code === 'ERR_NETWORK' || 
+          axiosError.message?.includes('Network Error') ||
+          axiosError.message?.includes('CORS')) {
+        throw new Error('Unable to connect to server. This may be due to CORS configuration or network issues.');
+      }
+      
       throw new Error('Network error');
     }
   },

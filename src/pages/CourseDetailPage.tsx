@@ -5,13 +5,14 @@ import { fetchCourseById, fetchCourses } from '../store/slices/coursesSlice';
 import Button from '../components/ui/Button';
 import Loading from '../components/ui/Loading';
 import Card from '../components/ui/Card';
+import InstructorContentGuide from '../components/course/InstructorContentGuide';
 
 const CourseDetailPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { currentCourse, courses, loading, error } = useAppSelector(state => state.courses);
-  const { isAuthenticated } = useAppSelector(state => state.auth);
+  const { user, isAuthenticated } = useAppSelector(state => state.auth);
 
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
@@ -203,39 +204,157 @@ const CourseDetailPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Enrollment Button */}
+              {/* Action Buttons */}
               <div className="flex gap-4">
-                {isEnrolled ? (
+                {user?.role === 'INSTRUCTOR' && user.id === displayCourse.instructorId ? (
+                  // Instructor management options
                   <>
                     <Button 
-                      onClick={() => navigate(`/courses/${courseId}/learn`)}
+                      onClick={() => navigate(`/instructor/courses/${courseId}/content`)}
                       className="px-8"
                     >
-                      Continue Learning
+                      <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      Manage Content
                     </Button>
                     <Button 
                       variant="outline"
-                      onClick={handleUnenroll}
-                      disabled={enrolling}
-                      loading={enrolling}
+                      onClick={() => navigate(`/instructor/courses/${courseId}/edit`)}
                     >
-                      Unenroll
+                      <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Course
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate(`/instructor/courses/${courseId}/analytics`)}
+                    >
+                      <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Analytics
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    onClick={handleEnroll}
-                    disabled={enrolling}
-                    loading={enrolling}
-                    className="px-8"
-                  >
-                    Enroll Now
-                  </Button>
+                  // Student enrollment options
+                  <>
+                    {isEnrolled ? (
+                      <>
+                        <Button 
+                          onClick={() => navigate(`/courses/${courseId}/learn`)}
+                          className="px-8"
+                        >
+                          Continue Learning
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={handleUnenroll}
+                          disabled={enrolling}
+                          loading={enrolling}
+                        >
+                          Unenroll
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        onClick={handleEnroll}
+                        disabled={enrolling}
+                        loading={enrolling}
+                        className="px-8"
+                      >
+                        Enroll Now
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Instructor Management Section */}
+        {user?.role === 'INSTRUCTOR' && user.id === displayCourse.instructorId && (
+          <Card className="mb-8 bg-blue-50 border-blue-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg mr-3">
+                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-900">Course Management</h3>
+                  <p className="text-sm text-blue-700">Manage your course content, settings, and analytics</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button 
+                onClick={() => navigate(`/instructor/courses/${courseId}/content`)}
+                className="bg-blue-600 hover:bg-blue-700 text-white justify-start"
+              >
+                <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Manage Content
+                <span className="ml-auto text-xs bg-blue-500 px-2 py-1 rounded">
+                  {displayCourse.modules?.length || 0} modules
+                </span>
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => navigate(`/instructor/courses/${courseId}/edit`)}
+                className="border-blue-300 text-blue-700 hover:bg-blue-50 justify-start"
+              >
+                <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit Details
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => navigate(`/instructor/courses/${courseId}/analytics`)}
+                className="border-blue-300 text-blue-700 hover:bg-blue-50 justify-start"
+              >
+                <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                View Analytics
+                <span className="ml-auto text-xs bg-gray-200 px-2 py-1 rounded">
+                  {displayCourse.enrollmentCount || 0} students
+                </span>
+              </Button>
+            </div>
+            
+            {(!displayCourse.modules || displayCourse.modules.length === 0) && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start">
+                  <svg className="h-5 w-5 text-yellow-400 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833-.23 2.5 1.312 2.5z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">No content added yet</p>
+                    <p className="text-sm text-yellow-700 mt-1">Start adding modules and lessons to make your course available to students.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Instructor Content Guide */}
+        {user?.role === 'INSTRUCTOR' && user.id === displayCourse.instructorId && (
+          <InstructorContentGuide 
+            courseId={courseId!} 
+            hasModules={!!(displayCourse.modules && displayCourse.modules.length > 0)} 
+          />
+        )}
 
         {/* Course Content Preview */}
         <Card className="mb-8">

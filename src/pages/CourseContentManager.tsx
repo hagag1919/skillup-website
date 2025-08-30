@@ -305,6 +305,24 @@ const CourseContentManager: React.FC = () => {
           </div>
         </div>
 
+        {/* Quick Tips Banner */}
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <svg className="h-5 w-5 text-blue-400 mt-0.5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-blue-900 mb-1">💡 Content Creation Tips</h4>
+              <div className="text-sm text-blue-700 space-y-1">
+                <p>• <strong>Modules</strong> are like chapters - organize your content logically</p>
+                <p>• <strong>Lessons</strong> contain your actual teaching videos and materials</p>
+                <p>• Start with an introduction module to welcome your students</p>
+                <p>• Keep videos between 5-15 minutes for better engagement</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600">{error}</p>
@@ -314,12 +332,24 @@ const CourseContentManager: React.FC = () => {
         {/* Course Content */}
         {modules.length === 0 ? (
           <Card className="p-8 text-center">
-            <svg className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-16 w-16 text-blue-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No modules yet</h3>
-            <p className="text-gray-500 mb-4">Start building your course by creating modules and lessons.</p>
-            <Button onClick={() => openModuleModal()}>Create Your First Module</Button>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Ready to Start Teaching? 🚀</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Your course structure begins with modules. Think of them as chapters in your teaching journey. 
+              Each module will contain lessons where you'll share your knowledge.
+            </p>
+            <div className="bg-blue-50 rounded-lg p-4 mb-6 max-w-md mx-auto">
+              <p className="text-sm text-blue-800 font-medium mb-2">💡 Suggested first module:</p>
+              <p className="text-sm text-blue-700">"Introduction & Welcome" - Help students get oriented</p>
+            </div>
+            <Button onClick={() => openModuleModal()} size="lg" className="px-8">
+              <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Your First Module
+            </Button>
           </Card>
         ) : (
           <div className="space-y-6">

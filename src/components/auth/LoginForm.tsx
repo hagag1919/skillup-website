@@ -5,6 +5,7 @@ import { loginUser } from '../../store/slices/authSlice';
 import Button from '../ui/Button.js';
 import Input from '../ui/Input.js';
 import Card from '../ui/Card.js';
+import ConnectionError from '../ui/ConnectionError.js';
 
 const LoginForm: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -16,6 +17,35 @@ const LoginForm: React.FC = () => {
     password: '',
   });
 
+  const [showConnectionError, setShowConnectionError] = useState(false);
+
+  // Check if the error is a connection/CORS error
+  const isConnectionError = error && (
+    error.includes('CORS') || 
+    error.includes('Unable to connect to server') ||
+    error.includes('Network error') ||
+    error.includes('ERR_NETWORK')
+  );
+
+  const handleRetry = () => {
+    setShowConnectionError(false);
+    // Try submitting the form again
+    if (formData.email && formData.password) {
+      const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+      handleSubmit(fakeEvent);
+    }
+  };
+
+  if (showConnectionError || isConnectionError) {
+    return (
+      <ConnectionError 
+        error={error || 'Connection failed'}
+        onRetry={handleRetry}
+        showTechnicalDetails={process.env.NODE_ENV === 'development'}
+      />
+    );
+  }
+
   const handleChange = (field: string) => (value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -25,6 +55,7 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowConnectionError(false); // Reset connection error state
     console.log('Attempting login with:', { email: formData.email, password: '***' });
 
     try {
@@ -37,6 +68,13 @@ const LoginForm: React.FC = () => {
       console.error('Login failed:', error);
       if (error instanceof Error) {
         console.error('Error message:', error.message);
+        
+        // Check if it's a connection error
+        if (error.message.includes('CORS') || 
+            error.message.includes('Unable to connect to server') ||
+            error.message.includes('Network error')) {
+          setShowConnectionError(true);
+        }
       } else {
         console.error('Unknown error type:', error);
       }

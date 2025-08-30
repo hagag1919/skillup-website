@@ -11,7 +11,7 @@ const CourseDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { currentCourse, courses, loading, error } = useAppSelector(state => state.courses);
-  const { user, isAuthenticated } = useAppSelector(state => state.auth);
+  const { isAuthenticated } = useAppSelector(state => state.auth);
 
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrolling, setEnrolling] = useState(false);

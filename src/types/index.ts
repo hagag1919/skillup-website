@@ -297,6 +297,7 @@ export interface InputProps {
   required?: boolean;
   disabled?: boolean;
   className?: string;
+  min?: string;
 }
 
 export interface ModalProps {

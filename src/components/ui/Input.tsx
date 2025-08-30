@@ -10,6 +10,7 @@ const Input: React.FC<InputProps> = ({
   required = false,
   disabled = false,
   className = '',
+  min,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
@@ -39,6 +40,7 @@ const Input: React.FC<InputProps> = ({
         onChange={handleChange}
         disabled={disabled}
         required={required}
+        min={min}
         className={inputClasses}
       />
       {error && (

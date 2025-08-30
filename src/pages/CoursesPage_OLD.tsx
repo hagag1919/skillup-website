@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchCourses, fetchCategories } from '../store/slices/coursesSlice';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Loading from '../components/ui/Loading';
-import type { Course, CourseFilters } from '../types/index';
+import type { Course } from '../types/index';
 
 const CoursesPage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -25,27 +23,51 @@ const CoursesPage: React.FC = () => {
             title: "Complete JavaScript Course",
             description: "Learn JavaScript from basics to advanced concepts with real-world projects.",
             category: "Programming",
-            instructor: { name: "John Smith" },
+            instructorId: 1,
+            instructor: { 
+              id: 1, 
+              name: "John Smith", 
+              email: "john.smith@example.com", 
+              role: "INSTRUCTOR" as const 
+            },
             rating: 4.8,
             reviewCount: 1250,
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
           },
           {
             id: 2,
             title: "React Development Bootcamp",
             description: "Master React.js and build modern web applications with hands-on projects.",
             category: "Programming",
-            instructor: { name: "Sarah Johnson" },
+            instructorId: 2,
+            instructor: { 
+              id: 2, 
+              name: "Sarah Johnson", 
+              email: "sarah.johnson@example.com", 
+              role: "INSTRUCTOR" as const 
+            },
             rating: 4.9,
             reviewCount: 890,
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
           },
           {
             id: 3,
             title: "Data Science Fundamentals",
             description: "Introduction to data science, statistics, and machine learning concepts.",
             category: "Data Science",
-            instructor: { name: "Dr. Michael Chen" },
+            instructorId: 3,
+            instructor: { 
+              id: 3, 
+              name: "Dr. Michael Chen", 
+              email: "michael.chen@example.com", 
+              role: "INSTRUCTOR" as const 
+            },
             rating: 4.7,
             reviewCount: 560,
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
           },
         ];
         

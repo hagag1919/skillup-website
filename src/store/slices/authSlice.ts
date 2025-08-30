@@ -58,6 +58,21 @@ export const validateToken = createAsyncThunk<
   }
 );
 
+export const refreshToken = createAsyncThunk<
+  AuthResponse,
+  void,
+  { rejectValue: string }
+>(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await authApi.refreshToken();
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Token refresh failed');
+    }
+  }
+);
+
 // Auth slice
 const authSlice = createSlice({
   name: 'auth',
@@ -138,6 +153,24 @@ const authSlice = createSlice({
       })
       .addCase(validateToken.rejected, (state) => {
         state.loading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        authApi.logout();
+      });
+
+    // Refresh token
+    builder
+      .addCase(refreshToken.pending, () => {
+        // Don't set loading for background refresh
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.user = action.payload.data.user;
+        state.token = action.payload.data.token;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.rejected, (state) => {
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;

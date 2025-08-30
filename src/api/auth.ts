@@ -125,6 +125,58 @@ export const authApi = {
     }
   },
 
+  // Refresh token
+  refreshToken: async (): Promise<AuthResponse> => {
+    try {
+      const response = await apiClient.post<ApiResponse<{
+        token: string;
+        id: number;
+        name: string;
+        email: string;
+        role: string;
+      }>>('/api/auth/refresh');
+      
+      if (response.data.success) {
+        const backendData = response.data.data;
+        
+        const authResponse: AuthResponse = {
+          success: true,
+          data: {
+            token: backendData.token,
+            userId: backendData.id,
+            user: {
+              id: backendData.id,
+              name: backendData.name,
+              email: backendData.email,
+              role: backendData.role as 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'
+            }
+          }
+        };
+        
+        // Update stored token and user
+        localStorage.setItem('token', backendData.token);
+        localStorage.setItem('user', JSON.stringify(authResponse.data.user));
+        
+        return authResponse;
+      } else {
+        throw new Error(response.data.message || 'Token refresh failed');
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      console.error('Token refresh error:', error);
+      
+      if (axiosError.response?.data) {
+        throw new Error(axiosError.response.data.message || 'Token refresh failed');
+      }
+      
+      // Clear invalid tokens
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      throw new Error('Session expired. Please log in again.');
+    }
+  },
+
   // Logout
   logout: (): void => {
     localStorage.removeItem('token');

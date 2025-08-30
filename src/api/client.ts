@@ -1,6 +1,12 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import type { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from '../types/index.js';
+import { tokenUtils, sessionUtils } from '../utils/auth.js';
+
+// Extend AxiosRequestConfig to include retry flag
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 // API Configuration
 export const API_CONFIG = {
@@ -14,6 +20,43 @@ export const API_CONFIG = {
   RETRY_DELAY: 1000,
 };
 
+// Token refresh promise to prevent multiple simultaneous refresh calls
+let refreshPromise: Promise<string> | null = null;
+
+// Function to refresh token
+const refreshAuthToken = async (): Promise<string> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const refreshResponse = await axios.post(`${API_CONFIG.BASE_URL}/api/auth/refresh`, {}, {
+        headers: {
+          'Authorization': `Bearer ${tokenUtils.getToken()}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (refreshResponse.data.success) {
+        const newToken = refreshResponse.data.data.token;
+        tokenUtils.setToken(newToken);
+        return newToken;
+      } else {
+        throw new Error('Token refresh failed');
+      }
+    } catch (error) {
+      sessionUtils.clearSession();
+      window.location.href = '/login';
+      throw error;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -21,12 +64,25 @@ const apiClient: AxiosInstance = axios.create({
   headers: API_CONFIG.HEADERS,
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and check expiration
 apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
+  async (config) => {
+    const token = tokenUtils.getToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Check if token is expired and refresh if needed
+      if (tokenUtils.isTokenExpired(token)) {
+        try {
+          const newToken = await refreshAuthToken();
+          config.headers.Authorization = `Bearer ${newToken}`;
+        } catch (error) {
+          // Token refresh failed, redirect to login
+          sessionUtils.clearSession();
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+      } else {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -35,12 +91,14 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling with token refresh
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as ExtendedAxiosRequestConfig;
+    
     // Handle CORS errors specifically
     if (!error.response && error.code === 'ERR_NETWORK') {
       // This is likely a CORS or network error
@@ -50,11 +108,25 @@ apiClient.interceptors.response.use(
       return Promise.reject(corsError);
     }
     
-    // Handle common errors
+    // Handle 401 errors with token refresh
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        const newToken = await refreshAuthToken();
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        // Token refresh failed, redirect to login
+        sessionUtils.clearSession();
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    // Handle other auth errors
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionUtils.clearSession();
       window.location.href = '/login';
     }
     

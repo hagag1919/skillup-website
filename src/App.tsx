@@ -17,13 +17,22 @@ import InstructorAnalytics from './pages/InstructorAnalytics.js';
 import CourseForm from './pages/CourseForm.js';
 import CourseContentManager from './pages/CourseContentManager.js';
 import ProfilePage from './pages/ProfilePage.js';
+import { useSessionManager, useTokenExpirationWarning } from './hooks/useSessionManager.js';
 import './App.css';
+
+// Component to handle session management
+function SessionManager() {
+  useSessionManager();
+  useTokenExpirationWarning();
+  return null;
+}
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
         <ErrorBoundary>
+          <SessionManager />
           <div className="App">
             <Routes>
               <Route path="/login" element={<LoginPage />} />
